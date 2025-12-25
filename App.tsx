@@ -12,15 +12,6 @@ import { Surah, Ayah, QuizQuestion, LastRead, TafseerResponse } from './types';
 // --- API Configurations ---
 const API_BASE = "https://api.alquran.cloud/v1";
 
-// Safe access to environment variables
-const getApiKey = () => {
-  try {
-    return (window as any).process?.env?.API_KEY || (typeof process !== 'undefined' ? process.env.API_KEY : '');
-  } catch {
-    return '';
-  }
-};
-
 // --- Helper Functions ---
 const removeTashkeel = (text: string) => text.replace(/([^\u0621-\u063A\u0641-\u064A\u0660-\u0669a-zA-Z 0-9])/g, '');
 
@@ -187,9 +178,11 @@ export default function App() {
   };
 
   const callGemini = async (prompt: string, isJson: boolean = false) => {
-    const apiKey = getApiKey();
+    // Direct access to process.env.API_KEY as per instructions
+    const apiKey = process.env.API_KEY;
+    
     if (!apiKey) {
-      setAiContent("خطأ: لم يتم ضبط مفتاح API_KEY في إعدادات النشر (Vercel). يرجى إضافة المفتاح في Environment Variables.");
+      setAiContent("خطأ: لم يتم العثور على مفتاح API_KEY. يرجى التأكد من إضافته في إعدادات البيئة.");
       setAiLoading(false);
       return null;
     }
@@ -217,7 +210,7 @@ export default function App() {
       setAiContent(text);
     } catch (error) {
         console.error(error);
-      if (!isJson) setAiContent("عذراً، حدث خطأ أثناء الاتصال بالذكاء الاصطناعي. تأكد من صحة المفتاح.");
+      if (!isJson) setAiContent("عذراً، حدث خطأ أثناء الاتصال بالذكاء الاصطناعي.");
       return null;
     } finally {
       setAiLoading(false);
