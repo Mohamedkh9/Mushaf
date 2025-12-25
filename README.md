@@ -1,20 +1,32 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# مصحف الإيمان - Mushaf Al-Iman 🌙
 
-# Run and deploy your AI Studio app
+تطبيق قرآني ذكي مدعوم بالذكاء الاصطناعي لتجربة تلاوة وتدبر فريدة.
 
-This contains everything you need to run your app locally.
+## 🚀 خطوات النشر (Deployment Steps)
 
-View your app in AI Studio: https://ai.studio/apps/drive/1dMC_NvOfErAv6LxijByQOq7ie10b_sxg
+### 1. الرفع على GitHub
+- قم بإنشاء مستودع جديد (Repository) على GitHub.
+- قم برفع جميع ملفات المشروع إلى المستودع.
 
-## Run Locally
+### 2. النشر على Vercel
+- قم بتسجيل الدخول إلى [Vercel](https://vercel.com).
+- انقر على **Add New** ثم **Project**.
+- قم باستيراد المستودع من GitHub.
+- **إعداد مفتاح الذكاء الاصطناعي (Environment Variables):**
+    - قبل النقر على Deploy، اذهب إلى قسم **Environment Variables**.
+    - أضف مفتاحاً جديداً:
+        - **Key:** `API_KEY`
+        - **Value:** (ضع مفتاح Gemini API الخاص بك هنا)
+- انقر على **Deploy**.
 
-**Prerequisites:**  Node.js
+## ✨ المميزات
+- تلاوة مسموعة للشيخ ماهر المعيقلي.
+- مساعد تدبر ذكي (تفسير، إعراب، أسباب نزول، متشابهات).
+- نظام تسميع آلي للتحقق من الحفظ.
+- اختبارات تفاعلية وملخصات للسور.
 
-
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## 🛠 التقنيات المستخدمة
+- React & TypeScript
+- Tailwind CSS (التصميم)
+- Google Gemini API (الذكاء الاصطناعي)
+- Al Quran Cloud API (البيانات القرآنية)

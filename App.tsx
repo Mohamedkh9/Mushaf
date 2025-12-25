@@ -4,7 +4,7 @@ import {
   Volume2, Info, X, Search, CheckCircle, AlertCircle, Loader2, Sparkles, 
   Send, HelpCircle, FileText, Check, ScrollText, 
   BookType, Home, Layers, Heart, Baby, Copy, ListTodo, PenTool, 
-  History, Menu, RefreshCw, Maximize2, Minimize2
+  History, Menu, RefreshCw, Maximize2, Minimize2, Share2
 } from 'lucide-react';
 import { GoogleGenAI } from "@google/genai";
 import { Surah, Ayah, QuizQuestion, LastRead, TafseerResponse } from './types';
@@ -55,6 +55,7 @@ export default function App() {
   const [quizFinished, setQuizFinished] = useState(false);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [isAnswerChecked, setIsAnswerChecked] = useState(false);
+  const [copyStatus, setCopyStatus] = useState<string | null>(null);
 
   // Memorization State
   const [isListening, setIsListening] = useState(false);
@@ -177,10 +178,17 @@ export default function App() {
   };
 
   const callGemini = async (prompt: string, isJson: boolean = false) => {
+    const apiKey = process.env.API_KEY;
+    if (!apiKey) {
+      setAiContent("خطأ: لم يتم العثور على مفتاح API_KEY في إعدادات البيئة (Vercel). يرجى مراجعة دليل README.");
+      setAiLoading(false);
+      return null;
+    }
+
     setAiLoading(true);
     if (!isJson) setAiContent(null);
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+      const ai = new GoogleGenAI({ apiKey });
       const config: any = {};
       if (isJson) config.responseMimeType = "application/json";
 
@@ -200,7 +208,7 @@ export default function App() {
       setAiContent(text);
     } catch (error) {
         console.error(error);
-      if (!isJson) setAiContent("عذراً، حدث خطأ أثناء الاتصال بالذكاء الاصطناعي.");
+      if (!isJson) setAiContent("عذراً، حدث خطأ أثناء الاتصال بالذكاء الاصطناعي. تأكد من صحة مفتاح الـ API وصلاحيته.");
       return null;
     } finally {
       setAiLoading(false);
@@ -277,6 +285,14 @@ export default function App() {
     callGemini(prompt);
   };
 
+  const copyAyah = (ayah: Ayah) => {
+    const textToCopy = `${ayah.text} [سورة ${currentSurah?.name}: ${ayah.numberInSurah}]`;
+    navigator.clipboard.writeText(textToCopy).then(() => {
+        setCopyStatus(ayah.number.toString());
+        setTimeout(() => setCopyStatus(null), 2000);
+    });
+  };
+
   const handleAskQuestion = () => {
     if (!userQuestion.trim() || !activeAyah || !currentSurah) return;
     const context = `الآية: "${activeAyah.text}" (سورة ${currentSurah.name})`;
@@ -292,7 +308,7 @@ export default function App() {
     }
     
     if (!('webkitSpeechRecognition' in window)) {
-      alert("يرجى استخدام متصفح Chrome.");
+      alert("يرجى استخدام متصفح Chrome لتفعيل ميزة التسميع.");
       return;
     }
 
@@ -603,7 +619,7 @@ export default function App() {
             </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto custom-scrollbar relative">
+        <div className="flex-1 overflow-y-auto custom-scrollbar relative animate-in fade-in duration-500">
             {!currentSurah ? (
                 <div className="h-full flex flex-col items-center justify-center text-stone-400 p-8">
                     <div className="w-20 h-20 bg-stone-100 rounded-full flex items-center justify-center mb-4">
@@ -618,7 +634,7 @@ export default function App() {
             ) : (
                 <div className="max-w-3xl mx-auto p-4 md:p-8 pb-32">
                     {currentSurah.number !== 1 && currentSurah.number !== 9 && (
-                        <div className="text-center mb-12 mt-4">
+                        <div className="text-center mb-12 mt-4 animate-in slide-in-from-top duration-700">
                             <p className="text-2xl md:text-3xl font-amiri text-emerald-900 select-none">بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</p>
                         </div>
                     )}
@@ -629,7 +645,7 @@ export default function App() {
                                 <span 
                                     onClick={() => { setActiveAyah(ayah); setIsPlaying(false); }}
                                     className={`
-                                        px-1 rounded-lg cursor-pointer transition-colors duration-200
+                                        px-1 rounded-lg cursor-pointer transition-all duration-300
                                         ${activeAyah?.number === ayah.number ? 'bg-emerald-100 text-emerald-900 shadow-sm' : 'hover:bg-stone-100'}
                                         ${mode === 'memorize' && activeAyah?.number === ayah.number ? 'blur-sm select-none' : ''}
                                     `}
@@ -668,6 +684,13 @@ export default function App() {
                                 title="تفسير"
                             >
                                 <Book className="w-5 h-5" />
+                            </button>
+                            <button 
+                                onClick={() => copyAyah(activeAyah)}
+                                className="w-10 h-10 flex items-center justify-center rounded-full bg-stone-100 text-stone-600 hover:bg-stone-200 transition-colors"
+                                title="نسخ الآية"
+                            >
+                                {copyStatus === activeAyah.number.toString() ? <Check className="w-5 h-5 text-green-600" /> : <Copy className="w-5 h-5" />}
                             </button>
                         </div>
 
@@ -729,8 +752,8 @@ export default function App() {
       </main>
 
       {showTafseer && (
-        <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/40 backdrop-blur-sm p-0 md:p-4">
-            <div className="bg-white w-full md:max-w-lg md:rounded-2xl rounded-t-2xl shadow-2xl flex flex-col max-h-[85vh] animate-in slide-in-from-bottom duration-300">
+        <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/40 backdrop-blur-sm p-0 md:p-4" onClick={() => setShowTafseer(false)}>
+            <div className="bg-white w-full md:max-w-lg md:rounded-2xl rounded-t-2xl shadow-2xl flex flex-col max-h-[85vh] animate-in slide-in-from-bottom duration-300" onClick={e => e.stopPropagation()}>
                 <div className="p-4 border-b border-stone-100 flex justify-between items-center bg-emerald-50/50 rounded-t-2xl shrink-0">
                     <h3 className="font-bold font-amiri text-emerald-900 text-lg">التفسير الميسر</h3>
                     <button onClick={() => setShowTafseer(false)} className="p-1 hover:bg-stone-100 rounded-full"><X className="w-5 h-5 text-stone-500" /></button>
@@ -787,9 +810,11 @@ export default function App() {
                                 <div className="prose prose-lg max-w-none font-amiri text-stone-800">
                                     <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-stone-100 mb-6 relative overflow-hidden">
                                         <div className="absolute top-0 right-0 w-1.5 h-full bg-emerald-500"></div>
-                                        <p className="text-lg sm:text-2xl text-center leading-loose text-emerald-950 font-amiri">
-                                            {activeAyah?.text}
-                                        </p>
+                                        <div className="flex justify-between items-start mb-2">
+                                            <p className="text-lg sm:text-2xl text-center leading-loose text-emerald-950 font-amiri flex-1">
+                                                {activeAyah?.text}
+                                            </p>
+                                        </div>
                                     </div>
                                     <div className="whitespace-pre-wrap leading-relaxed text-lg sm:text-xl text-stone-700">
                                         {aiContent}
