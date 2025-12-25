@@ -180,7 +180,7 @@ export default function App() {
   const callGemini = async (prompt: string, isJson: boolean = false) => {
     const apiKey = process.env.API_KEY;
     if (!apiKey) {
-      setAiContent("خطأ: لم يتم العثور على مفتاح API_KEY في إعدادات البيئة (Vercel). يرجى مراجعة دليل README.");
+      setAiContent("خطأ: لم يتم العثور على مفتاح API_KEY. يرجى إضافته في إعدادات البيئة (Environment Variables).");
       setAiLoading(false);
       return null;
     }
@@ -208,10 +208,23 @@ export default function App() {
       setAiContent(text);
     } catch (error) {
         console.error(error);
-      if (!isJson) setAiContent("عذراً، حدث خطأ أثناء الاتصال بالذكاء الاصطناعي. تأكد من صحة مفتاح الـ API وصلاحيته.");
+      if (!isJson) setAiContent("عذراً، حدث خطأ أثناء الاتصال بالذكاء الاصطناعي. تأكد من صلاحية مفتاح الـ API.");
       return null;
     } finally {
       setAiLoading(false);
+    }
+  };
+
+  const shareAyah = (ayah: Ayah) => {
+    const text = `${ayah.text} [سورة ${currentSurah?.name}: ${ayah.numberInSurah}]`;
+    if (navigator.share) {
+      navigator.share({
+        title: 'آية من مصحف الإيمان',
+        text: text,
+        url: window.location.href,
+      }).catch(console.error);
+    } else {
+      copyAyah(ayah);
     }
   };
 
@@ -691,6 +704,13 @@ export default function App() {
                                 title="نسخ الآية"
                             >
                                 {copyStatus === activeAyah.number.toString() ? <Check className="w-5 h-5 text-green-600" /> : <Copy className="w-5 h-5" />}
+                            </button>
+                            <button 
+                                onClick={() => shareAyah(activeAyah)}
+                                className="w-10 h-10 flex items-center justify-center rounded-full bg-stone-100 text-stone-600 hover:bg-stone-200 transition-colors"
+                                title="مشاركة"
+                            >
+                                <Share2 className="w-5 h-5" />
                             </button>
                         </div>
 
