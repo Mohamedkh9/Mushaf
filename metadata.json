@@ -1,0 +1,7 @@
+{
+  "name": "Mushaf Al-Iman",
+  "description": "An intelligent Quranic companion featuring AI-powered insights, recitation verification, and interactive learning.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
